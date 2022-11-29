@@ -1,8 +1,13 @@
 import express from 'express';
-import notFoundMiddleware from './middleware/not-found';
+import notFoundMiddleware from './middleware/not-found.js';
 import dotenv from 'dotenv';
-import connectDB from './db/connect.js'
-import authRouter from './routes/authRoutes';
+import errorHandlerMiddleware from './middleware/error-handler.js';
+//import connectDB from './db/connect.js'
+import authRouter from './routes/authRoutes.js';
+import songsRouter from './routes/songsRoutes.js';
+import connectDB from './db/connect.js';
+import 'express-async-errors';
+import morgan from 'morgan';
 dotenv.config()
 
 const app=express()
@@ -10,13 +15,21 @@ const app=express()
 app.get('/',(req,res)=>{
     res.send('welcome')
 })
-app.use(notFoundMiddleware)
-const port=process.env.port || 500
-app.listen(port,()=>console.log(`Server is runnning on port ${port}`))
+
+
+const port=process.env.port || 5000
 
 app.use(express.json())
 
-app.use('api/v1/auth',authRouter)
+app.use('/api/v1/auth',authRouter)
+app.use('/api/v1/songs',songsRouter)
+
+app.use(notFoundMiddleware)
+app.use(errorHandlerMiddleware)
+
+if (process.env.NODE_ENV !== 'production'){
+    app.use(morgan('dev'))
+}
 
 const start=async()=>{
     try {
@@ -25,7 +38,7 @@ const start=async()=>{
             console.log(`Server is listening on port ${port}`)
         })
     } catch (error) {
-        
+        console.log(error)
     }
 }
 
