@@ -17,8 +17,16 @@ const register=async (req,res,next)=>{
     }
         
 }
-const login=(req,res)=>{
-    res.send('login')
+const login= async (req,res)=>{
+    const {name,password}=req.body
+    try{
+        const user=await User.findOne({name,password})
+        res.status(StatusCodes.OK).json({user})
+    }
+    catch(err){
+        console.log('Error login',err)
+    }
+   
 }
 const updateUser=(req,res)=>{
     res.send('update')
