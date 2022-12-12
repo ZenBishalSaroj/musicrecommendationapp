@@ -276,7 +276,7 @@ const storeSongs=async (req,res)=>{
 }
 const getAllSongs=async(req,res)=>{
   try{
-      const songs=await Songs.find().limit(100)
+      const songs=await Songs.find().limit(300)
       res.status(StatusCodes.OK).json({songs})
   }
   catch(err){
@@ -285,11 +285,14 @@ const getAllSongs=async(req,res)=>{
  
 }
 const getRecommendedSongs=async(req,res)=>{
+  const {user_id}=req.body
   try{
-      const songs=await Songs.find().limit(10)
-      const {data}= await axios.post('http://127.0.0.1:8000',{songs})
+      const songs=await Songs.find({user_id:user_id}).select('title -_id')
+      const titles=songs.map(item=>item.title)
+      const {data}= await axios.post('http://127.0.0.1:8000',{titles})
       const recommendation= await Songs.find().where('title').in(Object.values(data.songs.song)).exec();
       res.status(StatusCodes.OK).json({recommendation})
+      //res.status(StatusCodes.OK).json({titles})
   }
   catch(err){
       console.log('Error loading songs',err)
@@ -297,9 +300,11 @@ const getRecommendedSongs=async(req,res)=>{
  
 }
 const getUserSongs=async(req,res)=>{
+  const {user_id}=req.body
+  console.log(user_id)
   try{
-      const songs=await Songs.find()
-      res.status(StatusCodes.OK).json({recommendation})
+      const usersongs=await Songs.find({user_id:user_id})
+      res.status(StatusCodes.OK).json({usersongs})
   }
   catch(err){
       console.log('Error loading songs',err)
@@ -345,4 +350,4 @@ const child= (req,res)=>{
     // hild.stdin.write('https://www.youtube.com/watch?v=AVQpGI6Tq0o');
     // child.stdin.end();
 }
-export {storeSongs,getAllSongs,addSong,child,getRecommendedSongs}
+export {storeSongs,getAllSongs,addSong,child,getRecommendedSongs,getUserSongs}
